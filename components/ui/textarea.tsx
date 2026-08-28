@@ -1,0 +1,65 @@
+"use client"
+
+import * as React from "react"
+import { cn } from "@/lib/utils"
+
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string
+  error?: string
+  helperText?: string
+}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, label, error, helperText, id, required, ...props }, ref) => {
+    const generatedId = React.useId()
+    const inputId = id ?? generatedId
+    const errorId = error ? `${inputId}-error` : undefined
+    const helperId = helperText ? `${inputId}-helper` : undefined
+    const describedBy = [errorId, helperId].filter(Boolean).join(" ") || undefined
+    const hasError = Boolean(error)
+
+    return (
+      <div className="flex w-full flex-col gap-1.5">
+        {label && (
+          <label
+            htmlFor={inputId}
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {label}
+            {required && (
+              <span className="ml-1 text-destructive" aria-hidden="true">
+                *
+              </span>
+            )}
+          </label>
+        )}
+        <textarea
+          id={inputId}
+          ref={ref}
+          aria-invalid={hasError}
+          aria-describedby={describedBy}
+          aria-required={required}
+          className={cn(
+            "flex min-h-20 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none transition-colors",
+            hasError &&
+              "border-destructive focus-visible:ring-destructive text-destructive placeholder:text-destructive/60",
+            className
+          )}
+          {...props}
+        />
+        {error ? (
+          <p id={errorId} role="alert" className="text-xs font-medium text-destructive">
+            {error}
+          </p>
+        ) : helperText ? (
+          <p id={helperId} className="text-xs text-muted-foreground">
+            {helperText}
+          </p>
+        ) : null}
+      </div>
+    )
+  }
+)
+Textarea.displayName = "Textarea"
+
+export { Textarea }

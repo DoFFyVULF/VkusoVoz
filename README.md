@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ВкусоВоз — доставка еды
 
-## Getting Started
+Тёплая гастрономическая витрина + корзина + оформление заказа. Демо-режим без реальной оплаты и доставки — все заказы и платежи эмулируются.
 
-First, run the development server:
+> **Демо-режим** — проект работает без бэкенда платежей/курьеров. Авторизация, корзина и промокоды (`VKUS10` — 10%, `HELLO500` — 500 ₽) — мок. Данные сидируются в Postgres, но UI также показывает `lib/mock-data.ts` при отсутствии БД.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Стек
+
+- Next.js 16 (App Router, `typedRoutes`, RSC + Client Components)
+- React 19, TypeScript strict
+- Tailwind CSS 4 (`@theme inline`, CSS-переменные), `clsx` + `tailwind-merge`
+- Prisma 6 + PostgreSQL 16, `bcryptjs`
+- Zustand (корзина, persist `localStorage`), TanStack Query 5 (`staleTime 30s`)
+- React Hook Form + Zod, `lucide-react`, `date-fns`
+
+## Архитектура слоёв
+
+```
+app/                 — маршруты (page/layout/error/not-found), globals.css
+components/ui|layout|restaurant|dish|cart|checkout
+lib/
+  mock-data.ts       — мок-рестораны/блюда/коллекции
+  store/cart.ts      — zustand-корзина (persist, 1 ресторан)
+  validators/*       — zod-схемы (checkout, auth, dish …)
+  utils.ts           — cn()
+prisma/
+  schema.prisma      — User/Restaurant/Dish/Order/Payment/Review/Promo…
+  seed.ts            — 3 ресторана, категории, блюда, промокод VKUS10
+middleware.ts / proxy.ts — редирект /account, /restaurant-panel, /admin
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- UI — дизайн-токены (`--primary`, `--radius-card` …), `focus-visible`, `prefers-reduced-motion`, кастомный скроллбар, `overflow-x-hidden`.
+- Состояние — серверные данные через Query, клиентское — Zustand.
+- Валидация — Zod + RHF на клиенте, Prisma на сервере.
+- Доступ — middleware по cookie `vkusovoz_session`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Локальный запуск
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm install
+cp .env.example .env   # заполните DATABASE_URL / AUTH_SECRET
+docker-compose up -d   # postgres:5432 (healthcheck), pgAdmin опционально --profile tools
+pnpm db:generate
+pnpm db:migrate        # prisma migrate dev
+pnpm db:seed           # 3 ресторана + VKUS10
+pnpm dev               # http://localhost:3000
+```
 
-## Learn More
+Проверка:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm lint
+pnpm typecheck
+pnpm format            # prettier + tailwind plugin
+pnpm build && pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Переменные окружения (.env.example)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Переменная | Назначение |
+|---|---|
+| `DATABASE_URL`, `DIRECT_URL` | Postgres (Prisma) |
+| `POSTGRES_DB/USER/PASSWORD` | docker-compose |
+| `NEXT_PUBLIC_APP_URL` | базовый URL |
+| `NODE_ENV` | `development` / `production` |
+| `AUTH_SECRET` | подпись сессии (≥32 симв.) |
+| `SESSION_COOKIE_NAME`, `SESSION_MAX_AGE` | cookie сессии |
+| `PAYMENT_PROVIDER` | `MOCK` по умолчанию |
+| `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` | (опц.) реальный провайдер |
+| `REDIS_URL` | (опц.) rate-limit |
+| `SMTP_HOST/PORT/USER/PASS`, `EMAIL_FROM` | (опц.) почта |
+| `S3_BUCKET/REGION`, `CLOUDINARY_URL` | (опц.) загрузка изображений |
 
-## Deploy on Vercel
+См. `.env.example` — скопируйте и заполните секреты, не коммитьте `.env`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Демо-роли (seed)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Роль | Email | Пароль | Доступ |
+|---|---|---|---|
+| Админ | `admin@vkusovoz.local` | `Admin123!` | `/admin` |
+| Владелец пекарни | `owner.bakery@vkusovoz.local` | `Owner123!` | `/restaurant-panel` |
+| Владелец суши | `owner.tokio@vkusovoz.local` | `Owner123!` | `/restaurant-panel` |
+| Владелец бургерной | `owner.burger@vkusovoz.local` | `Owner123!` | `/restaurant-panel` |
+| Пользователь | `user@vkusovoz.local` | `User123!` | `/account`, корзина |
+
+Промокод: `VKUS10` — 10% (мин. 1000 ₽, макс. скидка 500 ₽, 30 дней).
+
+## Известные ограничения
+
+- Оплата — `MOCK` (без эквайринга); YooKassa — заготовка.
+- Доставка/курьеры — эмуляция статусов, без карт/трекинга.
+- Загрузка изображений — внешние URL (`picsum.photos`, `images.unsplash.com`), без S3.
+- Поиск/фильтры каталога — клиентские на моках; пагинация — позже.
+- i18n — только `ru`, без переключения языка.
+
+## Деплой
+
+- `next build` — standalone; `DATABASE_URL` обязателен.
+- Миграции: `prisma migrate deploy` на проде.
+- `docker-compose.yml` — только Postgres; приложение деплоится отдельно (Vercel/Docker).
+- `next.config.ts` — `typedRoutes: true`, `images.remotePatterns` для Unsplash/Picsum.
+
+## Лицензия
+
+Демо-проект, без лицензии.
