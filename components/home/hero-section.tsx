@@ -31,38 +31,38 @@ export function HeroSection() {
   const feeHint = mode === "pickup" ? "Скидка 10%" : "Бесплатно от 500 ₽"
 
   return (
-    <section className="relative overflow-hidden rounded-[24px] bg-surface border border-border">
+    <section className="relative overflow-hidden rounded-[20px] border border-border bg-surface sm:rounded-[24px]">
       <div className="grid lg:grid-cols-2">
-        <div className="flex flex-col gap-5 p-6 lg:p-10">
-          <div className="inline-flex w-fit items-center gap-2 rounded-full bg-warm px-3 py-1 text-xs font-semibold text-primary border border-border">
-            <span className="size-2 rounded-full bg-success animate-pulse" aria-hidden="true" />
+        <div className="flex flex-col gap-4 p-4 sm:gap-5 sm:p-6 lg:p-10">
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-warm px-3 py-1 text-[11px] font-semibold text-primary sm:text-xs">
+            <span className="size-2 shrink-0 rounded-full bg-success animate-pulse" aria-hidden="true" />
             Доставляем за 25–35 минут
           </div>
           <div className="flex flex-col gap-3">
-            <h1 className="font-heading text-[28px] font-bold leading-tight tracking-tight lg:text-[36px]">
-              Тёплая гастрономия <br />
+            <h1 className="font-heading text-[24px] font-bold leading-[1.05] tracking-tight sm:text-[28px] lg:text-[36px]">
+              Тёплая гастрономия <br className="hidden sm:inline" />
               <span className="text-primary">с доставкой до двери</span>
             </h1>
-            <p className="max-w-[520px] text-sm leading-relaxed text-muted-foreground lg:text-base">
+            <p className="max-w-[520px] text-[13px] leading-relaxed text-muted-foreground sm:text-sm lg:text-base">
               Выбирайте из любимых ресторанов города. Свежие блюда из локальных продуктов, быстрая доставка и забота в каждой детали.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-background p-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2.5 rounded-2xl border border-border bg-background p-2.5 sm:gap-3 sm:p-3">
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
               <AddressPicker open={pickerOpen} onOpenChange={setPickerOpen}>
                 <button
                   type="button"
                   aria-label="Выбрать адрес доставки"
-                  className="flex flex-1 items-center gap-2 rounded-xl border border-input bg-surface px-3 py-2 text-left hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11"
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-input bg-surface px-2.5 py-2 text-left hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:px-3"
                 >
                   <MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                  <span className="flex flex-col overflow-hidden flex-1">
+                  <span className="flex min-w-0 flex-1 flex-col overflow-hidden">
                     <span className="text-xs text-muted-foreground leading-none">Адрес доставки</span>
                     {address ? (
-                      <span className="truncate text-sm font-medium">{`${address.street}, ${address.house}`}</span>
+                      <span className="truncate text-[13px] font-medium sm:text-sm">{`${address.street}, ${address.house}`}</span>
                     ) : (
-                      <span className="truncate text-sm font-medium text-muted-foreground">Укажите адрес — ул. Тверская, 12</span>
+                      <span className="truncate text-[13px] font-medium text-muted-foreground sm:text-sm">Укажите адрес — ул. Тверская, 12</span>
                     )}
                   </span>
                 </button>
@@ -70,20 +70,20 @@ export function HeroSection() {
               <Button onClick={handleShowNearby} className="hidden shrink-0 lg:inline-flex min-h-11">
                 Показать рядом
               </Button>
-              <Button onClick={handleShowNearby} aria-label="Показать рядом" className="shrink-0 lg:hidden min-h-11 px-4">
+              <Button onClick={handleShowNearby} aria-label="Показать рядом" className="shrink-0 lg:hidden min-h-11 px-3 text-[13px] sm:px-4 sm:text-sm">
                 Найти
               </Button>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <DeliveryToggle />
-              <span className="text-xs text-muted-foreground" aria-live="polite">· {feeHint}</span>
+            <div className="flex flex-wrap items-center gap-2 gap-y-2 min-w-0">
+              <DeliveryToggle className="shrink-0" />
+              <span className="whitespace-nowrap text-xs text-muted-foreground" aria-live="polite">· {feeHint}</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><Clock className="size-4" aria-hidden="true" /> 25–35 мин</span>
-            <span className="inline-flex items-center gap-1.5"><Bike className="size-4" aria-hidden="true" /> от 0 ₽</span>
-            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-4" aria-hidden="true" /> Контроль качества</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-muted-foreground sm:gap-4 sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Clock className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" /> 25–35 мин</span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Bike className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" /> от 0 ₽</span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><ShieldCheck className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" /> Контроль качества</span>
           </div>
         </div>
 

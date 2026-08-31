@@ -40,30 +40,69 @@ export function DishCard({
   restaurantSlug,
   restaurantName,
 }: DishCardProps) {
-  const [qty, setQty] = React.useState(0)
   const addItem = useCartStore((s) => s.addItem)
+  const updateQuantity = useCartStore((s) => s.updateQuantity)
+  const removeItem = useCartStore((s) => s.removeItem)
+  const getOptionsKey = useCartStore((s) => s.getOptionsKey)
+  const items = useCartStore((s) => s.items)
+
+  const restaurantKey = restaurantId ?? restaurantSlug ?? "unknown"
+
+  // Опции у DishCard всегда пустые (base), поэтому ключ — "base"
+  const qty = React.useMemo(() => {
+    const baseKey = "base"
+    // Учитываем restaurantId, чтобы не смешивать одинаковые dishId из разных ресторанов
+    const found =
+      items.find((it) => it.dishId === id && it.restaurantId === restaurantKey && getOptionsKey(it.options) === baseKey) ??
+      items.find((it) => it.dishId === id && getOptionsKey(it.options) === baseKey)
+    return found?.quantity ?? 0
+  }, [items, id, getOptionsKey, restaurantKey])
 
   const handleAdd = () => {
     if (!isAvailable) return
-    setQty((q) => q + 1)
     if (onAdd) {
       onAdd(id)
-    } else {
-      addItem({
-        dishId: id,
-        name,
-        price,
-        image,
-        quantity: 1,
-        options: [],
-        restaurantId: restaurantId ?? restaurantSlug ?? "unknown",
-        restaurantName: restaurantName ?? undefined,
-      })
+      // Если onAdd используется, он сам отвечает за корзину (например, открывает модалку).
+      // Для простых карточек без модалки — добавляем напрямую.
+      // Чтобы qty не рассинхронился, если onAdd не добавил в стор, мы не инкрементим локально.
+      // Поэтому если onAdd есть — не трогаем стор, но qty всё равно считается из стора.
+      return
     }
+    addItem({
+      dishId: id,
+      name,
+      price,
+      image,
+      quantity: 1,
+      options: [],
+      restaurantId: restaurantKey,
+      restaurantName: restaurantName ?? undefined,
+    })
+  }
+
+  const handleIncrement = () => {
+    if (onAdd) {
+      onAdd(id)
+      return
+    }
+    addItem({
+      dishId: id,
+      name,
+      price,
+      image,
+      quantity: 1,
+      options: [],
+      restaurantId: restaurantKey,
+      restaurantName: restaurantName ?? undefined,
+    })
   }
 
   const handleDecrement = () => {
-    setQty((q) => Math.max(0, q - 1))
+    if (qty <= 1) {
+      removeItem(id, "base")
+    } else {
+      updateQuantity(id, "base", qty - 1)
+    }
   }
 
   return (
@@ -100,47 +139,53 @@ export function DishCard({
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-tight">{name}</h3>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-2.5 sm:gap-2 sm:p-3">
+        <h3 className="line-clamp-2 min-w-0 text-[13px] font-semibold leading-tight sm:text-sm">{name}</h3>
         {description && (
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+          <p className="line-clamp-2 min-w-0 text-[11px] leading-[1.35] text-muted-foreground sm:text-xs sm:leading-relaxed">{description}</p>
         )}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
-          <div className="flex flex-col">
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-[16px] font-bold leading-none">{price} ₽</span>
-              {oldPrice && <span className="text-xs font-normal text-muted-foreground line-through">{oldPrice} ₽</span>}
+        <div className="mt-auto flex min-w-0 items-end justify-between gap-1.5 pt-1 sm:gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="flex flex-wrap items-baseline gap-x-1 gap-y-0 sm:gap-x-1.5">
+              <span className="whitespace-nowrap text-[15px] font-bold leading-none sm:text-[16px]">{price}&nbsp;₽</span>
+              {oldPrice && <span className="whitespace-nowrap text-[11px] font-normal text-muted-foreground line-through sm:text-xs">{oldPrice}&nbsp;₽</span>}
             </span>
-            {weight && <span className="text-xs text-muted-foreground">{weight} г</span>}
+            {weight && <span className="whitespace-nowrap text-[11px] text-muted-foreground sm:text-xs">{weight}&nbsp;г</span>}
           </div>
           {isAvailable ? (
             qty === 0 ? (
               <Button
                 size="icon"
-                aria-label={`Добавить ${name}`}
+                aria-label={`Добавить ${name} в корзину`}
                 onClick={handleAdd}
-                className="size-9 rounded-xl shrink-0"
+                className="size-8 shrink-0 rounded-xl sm:size-9"
               >
-                <Plus className="size-4" />
+                <Plus className="size-3.5 sm:size-4" />
               </Button>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-xl border bg-card p-1">
+              <span className="inline-flex h-8 shrink-0 items-center gap-0.5 rounded-xl border bg-card p-0.5 sm:h-9 sm:p-1">
                 <button
                   type="button"
-                  aria-label="Уменьшить"
+                  aria-label={`Убрать одну порцию ${name}`}
                   onClick={handleDecrement}
-                  className="inline-flex size-8 items-center justify-center rounded-lg bg-muted hover:bg-border transition-colors duration-150 motion-reduce:transition-none"
+                  className="inline-flex size-6 items-center justify-center rounded-lg bg-muted text-foreground transition-colors duration-150 hover:bg-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:size-7"
                 >
-                  <Minus className="size-3.5" />
+                  <Minus className="size-3 sm:size-3.5" />
                 </button>
-                <span className="min-w-6 text-center text-sm font-semibold tabular-nums">{qty}</span>
+                <span
+                  className="min-w-6 px-1 text-center text-[13px] font-bold tabular-nums sm:min-w-7 sm:text-sm"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {qty}
+                </span>
                 <button
                   type="button"
-                  aria-label="Увеличить"
-                  onClick={handleAdd}
-                  className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-hover transition-colors duration-150 motion-reduce:transition-none"
+                  aria-label={`Добавить ещё одну порцию ${name}`}
+                  onClick={handleIncrement}
+                  className="inline-flex size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors duration-150 hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none sm:size-7"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-3 sm:size-3.5" />
                 </button>
               </span>
             )

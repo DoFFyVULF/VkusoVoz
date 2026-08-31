@@ -23,11 +23,20 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 lg:gap-4">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="ВкусоВоз — на главную"
         >
-          <Image src="/logo.png" alt="ВкусоВоз" width={52} height={52} className="rounded-lg" />
-          <span className="hidden font-heading text-[20px] font-bold tracking-tight sm:inline">ВкусоВоз</span>
+          <Image
+            src="/logo.png"
+            alt="ВкусоВоз"
+            width={52}
+            height={52}
+            priority
+            className="h-9 w-9 shrink-0 rounded-xl object-cover sm:h-11 sm:w-11"
+          />
+          <span className="font-heading text-[18px] font-bold tracking-tight leading-none whitespace-nowrap sm:text-[20px]">
+            ВкусоВоз
+          </span>
         </Link>
 
         <div className="hidden sm:flex shrink-0">
@@ -78,31 +87,32 @@ export function Header() {
           >
             <ShoppingBag className="size-5" aria-hidden="true" />
             {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold leading-none text-primary-foreground">
-                {cartCount}
+              <span
+                key={cartCount}
+                className="absolute -right-1 -top-1 flex min-w-5 size-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold leading-none text-primary-foreground tabular-nums shadow-sm animate-in fade-in zoom-in-95"
+              >
+                {cartCount > 99 ? "99+" : cartCount}
               </span>
             )}
           </Link>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-t border-border bg-surface px-4 py-2 lg:hidden">
+      <div className="flex items-center gap-1.5 border-t border-border bg-surface px-3 py-2 sm:gap-2 sm:px-4 lg:hidden min-w-0">
         <AddressPicker>
           <button
             type="button"
             aria-label="Выбрать адрес"
-            className="flex flex-1 items-center gap-2 rounded-xl bg-background border border-input px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11"
+            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl bg-background border border-input px-2.5 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-11 sm:gap-2 sm:px-3"
           >
             <MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" />
-            {address ? (
-              <span className="truncate text-sm font-medium">{`${address.street}, ${address.house}`}</span>
-            ) : (
-              <span className="truncate text-sm font-medium">Укажите адрес</span>
-            )}
-            <ChevronDown className="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
+            <span className="min-w-0 flex-1 truncate text-[13px] font-medium sm:text-sm">
+              {address ? `${address.street}, ${address.house}` : "Укажите адрес"}
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </button>
         </AddressPicker>
-        <DeliveryToggle size="sm" />
+        <DeliveryToggle size="sm" className="shrink-0" />
       </div>
     </header>
   )

@@ -311,7 +311,7 @@ export default function CartPage() {
             onApplyPromo={handleApplyPromo}
             onRemovePromo={handleRemovePromo}
             onCheckout={handleCheckout}
-            itemsCount={items.length}
+            itemsCount={totalQuantity}
             isAuthenticated={isAuthenticated}
             isAuthLoading={isAuthLoading}
             canCheckout={canCheckout}
@@ -327,7 +327,7 @@ export default function CartPage() {
       <div className="fixed inset-x-0 bottom-0 z-20 border-t bg-card px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Итого · {items.length} блюд</span>
+            <span className="text-xs text-muted-foreground">Итого · {totalQuantity} шт · {formatPrice(total)}</span>
             <span className="text-base font-bold tabular-nums">{formatPrice(total)}</span>
           </div>
           <Button
@@ -367,7 +367,7 @@ export default function CartPage() {
           onApplyPromo={handleApplyPromo}
           onRemovePromo={handleRemovePromo}
           onCheckout={handleCheckout}
-          itemsCount={items.length}
+          itemsCount={totalQuantity}
           isAuthenticated={isAuthenticated}
           isAuthLoading={isAuthLoading}
           canCheckout={canCheckout}

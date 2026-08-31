@@ -41,7 +41,9 @@ export function DeliveryToggle({ size = "default", className }: DeliveryTogglePr
 
   const baseBtn = cn(
     "relative z-10 inline-flex items-center justify-center rounded-full font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 motion-reduce:transition-none select-none",
-    isSm ? "h-7 min-h-7 px-3 text-xs" : "h-7 min-h-7 px-3.5 text-[13px]",
+    isSm
+      ? "h-7 min-h-7 px-2.5 text-[11px] sm:px-3 sm:text-xs"
+      : "h-7 min-h-7 px-3 text-xs sm:px-3.5 sm:text-[13px]",
   )
 
   return (
